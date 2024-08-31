@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-
+#[cfg(target_os = "windows")]
 fn main() {
     let seewo_freeze_ui_bin = include_bytes!("SeewoFreezeUI.exe");
     let mut working_dir = std::env::temp_dir();
@@ -10,9 +9,14 @@ fn main() {
         std::fs::remove_dir_all(working_dir.clone()).expect("错误：无法删除文件");
     };
 
-    let mut seewo_service_dir: PathBuf = [r"C:\", "Program Files (x86)", "Seewo", "SeewoService"]
+    let mut seewo_service_dir: std::path::PathBuf = [r"C:\", "Program Files (x86)", "Seewo", "SeewoService"]
         .iter()
         .collect();
+
+    if !seewo_service_dir.exists() {
+        return println!("错误：没有找到希沃管家的安装");
+    };
+
     seewo_service_dir.push({
         let seewo_service_ver_regex = regex::Regex::new(r"^SeewoService_[0-9]+").unwrap();
         let mut seewo_service_ver_dirname: String = String::new();
@@ -49,4 +53,10 @@ fn main() {
     let _ = std::process::Command::new(seewo_service_freezeui)
         .arg("--startup-with-main-window")
         .spawn();
+}
+
+
+#[cfg(not(target_os = "windows"))]
+fn main() {
+    println!("兄啊，你{}哪来希沃管家的冰点还原啊（恼）", std::env::consts::OS);
 }
